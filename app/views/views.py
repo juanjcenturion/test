@@ -26,6 +26,7 @@ from app.schemas.schemas import (
 class UsersAPI(MethodView):
     @jwt_required()
     def get(self, user_id = None):
+        additional_info = get_jwt()
         #Paginado Usuarios
         page = request.args.get('page', 1, type=int) #Def Value = 1
         can = request.args.get('can', 20, type= int) #Def Value = 20
@@ -34,13 +35,24 @@ class UsersAPI(MethodView):
 
         )
         #Show all results whit paginate.
-        if user_id is None:
-            results =  ShowUsersBasicSchema().dump(users, many=True)
-        #Only selected for ID.
-        else: 
-            user = User.query.get(user_id)
-            results = ShowUsersBasicSchema().dump(user)
-        return jsonify(results)
+        if additional_info['is_admin']:
+            if user_id is None:
+                results =  UserSchema().dump(users, many=True)
+            #Only selected for ID.
+            else: 
+                user = User.query.get(user_id)
+                results = UserSchema().dump(user)
+            return jsonify(results)
+        else:
+            if user_id is None:
+                results =  ShowUsersBasicSchema().dump(users, many=True)
+            #Only selected for ID.
+            else: 
+                user = User.query.get(user_id)
+                results = ShowUsersBasicSchema().dump(user)
+            return jsonify(results)
+
+        
 
     def post(self):
         #Create User based in UserSchema
