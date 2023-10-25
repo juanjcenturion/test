@@ -27,7 +27,7 @@ class Category(db.Model):
         primary_key=True
     )
     
-    category_name = db.Column(
+    name = db.Column(
         db.String(50), 
         nullable=False
     )

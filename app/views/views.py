@@ -4,8 +4,6 @@ from datetime import datetime, timedelta
 #Framework Imports.
 from flask.views import MethodView
 from flask import request, jsonify
-from app.models.models import *
-from app import database as db, app
 from flask_jwt_extended import ( 
     jwt_required, 
     create_access_token, 
@@ -17,9 +15,17 @@ from werkzeug.security import(
 )
 
 #Own imports
+from app import database as db, app
+from app.models.models import (
+    User,
+    Category,
+    Comment,
+    Post,
+)
 from app.schemas.schemas import (
     UserSchema,
     ShowUsersBasicSchema,
+    CategorySchema
 )
 
 
@@ -52,8 +58,6 @@ class UsersAPI(MethodView):
                 results = ShowUsersBasicSchema().dump(user)
             return jsonify(results)
 
-        
-
     def post(self):
         #Create User based in UserSchema
         user_json = UserSchema().load(request.json)
@@ -74,7 +78,7 @@ class UsersAPI(MethodView):
         #Confirmation of created user
         return jsonify({
             'Usuario nuevo creado': username 
-        }, 200)
+        }),200
 
     def put(self, user_id):
         user = User.query.get(user_id)
@@ -115,6 +119,46 @@ app.add_url_rule("/user", view_func=UsersAPI.as_view('user'))
 app.add_url_rule("/user/<user_id>", 
                 view_func=UsersAPI.as_view('user_for_id')
                 )
+
+
+class CategoriesAPI(MethodView):
+    def get(self, category_id = None):
+        if category_id is None:
+            categories = Category.query.all()
+            result = CategorySchema(exclude=('id',)).dump(categories, many=True)
+        else:
+            category = Category.query.get(category_id)
+            result = CategorySchema(exclude=('id',)).dump(category)
+        return jsonify(result)
+    
+    def post(self):
+        category_json = CategorySchema().load(request.json)
+        name = category_json.get('name')
+        new_category = Category(name=name)
+        db.session.add(new_category)
+        db.session.commit()
+        return jsonify(f"Nueva Categoria agregada: {CategorySchema(exclude=('id',)).dump(new_category)}"), 201
+    
+    def put(self, category_id):
+        category = Category.query.get(category_id)
+        category_json = CategorySchema().load(request.json)
+        name = category_json.get("name")
+        category.name = name
+        db.session.commit()
+        return jsonify(f"Nombre de categoria cambiado: {CategorySchema(exclude=('id',)).dump(category)}")
+    
+    def delete(self, category_id):
+        category = Category.query.get(category_id)
+        db.session.delete(category)
+        db.session.commit()
+        return jsonify(mensaje=f"Borraste el pais {category}")
+
+
+app.add_url_rule("/category", view_func=CategoriesAPI.as_view('category'))
+app.add_url_rule("/category/<category_id>", 
+                view_func=CategoriesAPI.as_view('category_for_id')
+                )
+
 
 @app.route('/login')
 def login():
