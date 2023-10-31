@@ -25,7 +25,8 @@ from app.models.models import (
 from app.schemas.schemas import (
     UserSchema,
     ShowUsersBasicSchema,
-    CategorySchema
+    CategorySchema,
+    PostSchema
 )
 
 
@@ -126,9 +127,19 @@ class CategoriesAPI(MethodView):
         if category_id is None:
             categories = Category.query.all()
             result = CategorySchema(exclude=('id',)).dump(categories, many=True)
+
         else:
             category = Category.query.get(category_id)
-            result = CategorySchema(exclude=('id',)).dump(category)
+            posts = Post.query.filter_by(category_id=category_id).all()
+            post_schemas = []
+            for post in posts:
+                post_schema = PostSchema(exclude=('id','content','author_id','category_id', 'date')).dump(post)
+                post_schemas.append(post_schema)
+
+            result = {
+                'category': CategorySchema(exclude=('id',)).dump(category),
+                'posts': post_schemas
+            }
         return jsonify(result)
     
     def post(self):
@@ -151,7 +162,7 @@ class CategoriesAPI(MethodView):
         category = Category.query.get(category_id)
         db.session.delete(category)
         db.session.commit()
-        return jsonify(mensaje=f"Borraste el pais {category}")
+        return jsonify(mensaje=f"Borraste la categoria: {category}")
 
 
 app.add_url_rule("/category", view_func=CategoriesAPI.as_view('category'))

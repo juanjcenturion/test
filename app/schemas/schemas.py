@@ -14,3 +14,11 @@ class UserSchema(ShowUsersBasicSchema):
 class CategorySchema(ma.Schema):
     id = fields.Integer(dump_only=True)
     name = fields.String()
+
+class PostSchema(ma.Schema):
+    id = fields.Integer(dump_only=True)
+    title = fields.String()
+    content = fields.String()
+    date = fields.DateTime()
+    author_id = fields.Integer()
+    category_id = fields.Integer()
