@@ -3,12 +3,15 @@ from datetime import datetime, timedelta
 
 # Framework Imports.
 from flask.views import MethodView
-from flask import request, jsonify
-from flask_jwt_extended import (
-    jwt_required,
-    create_access_token,
-    get_jwt_identity,
-    get_jwt,
+from flask import request, jsonify, render_template
+from flask_jwt_extended import ( 
+    jwt_required, 
+    create_access_token, 
+    get_jwt_identity, 
+    get_jwt)
+from werkzeug.security import( 
+    generate_password_hash, 
+    check_password_hash
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -223,7 +226,26 @@ app.add_url_rule("/post", view_func=PostsAPI.as_view("post"))
 app.add_url_rule("/post/<post_id>", view_func=PostsAPI.as_view("post_for_id"))
 
 
-@app.route("/login")
+
+class registerView(MethodView):
+    def get(self):
+        return render_template('register.html')
+    
+    def post(self):
+        username = request.form['username']
+        password = request.form['password']
+        password_hash = generate_password_hash(password, method='pbkdf2', salt_length=16 )
+        nuevo_usuario = User(username=username, password_hash=password_hash)
+        db.session.add(nuevo_usuario)
+        db.session.commit()
+
+        return render_template('register.html')
+
+
+app.add_url_rule('/register', view_func=registerView.as_view('register'))
+
+
+@app.route('/login')
 def login():
     data = request.authorization
     username = data.get("username")
