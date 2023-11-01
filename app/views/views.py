@@ -190,35 +190,6 @@ class PostsAPI(MethodView):
         return jsonify(result)
 
 
-
-    # @jwt_required()
-    # def post(self):
-    #     user = User.query.get(get_jwt_identity())
-    #     if not user:
-    #         return jsonify(error="Usuario no encontrado"), 404
-
-    #     data = request.json
-    #     title = data.get("title")
-    #     content = data.get("content")
-    #     category_id = data.get(
-    #         "category_id"
-    #     )
-
-    #     if not title or not content or category_id is None:
-    #         return jsonify(error="Faltan datos obligatorios"), 400
-
-    #     category = Category.query.get(category_id)
-    #     if not category:
-    #         return jsonify(error="Categoría no encontrada"), 404
-
-    #     new_post = Post(
-    #         title=title, content=content, author_id=user.id, category=category
-    #     )
-    #     db.session.add(new_post)
-    #     db.session.commit()
-
-    #     return jsonify(message="Publicación agregada exitosamente"), 201
-
 app.add_url_rule("/post", view_func=PostsAPI.as_view("post"))
 app.add_url_rule("/post/<post_id>", view_func=PostsAPI.as_view("post_for_id"))
 
