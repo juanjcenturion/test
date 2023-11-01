@@ -71,6 +71,10 @@ class Post(db.Model):
         db.ForeignKey('category.id'),
         nullable= False
     )
+
+    comment_obj = db.relationship("Comment")
+    
+
     def __str__(self):
         return self.name
 
@@ -106,5 +110,6 @@ class Comment(db.Model):
         db.ForeignKey('post.id'),
         nullable= False
     )
+
     def __str__(self):
         return self.name
