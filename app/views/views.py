@@ -4,14 +4,11 @@ from datetime import datetime, timedelta
 # Framework Imports.
 from flask.views import MethodView
 from flask import request, jsonify, render_template
-from flask_jwt_extended import ( 
-    jwt_required, 
-    create_access_token, 
-    get_jwt_identity, 
-    get_jwt)
-from werkzeug.security import( 
-    generate_password_hash, 
-    check_password_hash
+from flask_jwt_extended import (
+    jwt_required,
+    create_access_token,
+    get_jwt_identity,
+    get_jwt,
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -95,13 +92,17 @@ class UsersAPI(MethodView):
             user.is_admin = is_admin
             user.password_hash = password_hash
             db.session.commit()
-            return jsonify(mensaje=f"Modificaste la contraseña de: {user.username}")
+            return jsonify(
+                mensaje=f"Modificaste la contraseña de: {user.username}"
+            )
         elif password_hash is None:
             # If only change the Username
             user.is_admin = is_admin
             user.username = username
             db.session.commit()
-            return jsonify(mensaje=f"Modificaste nombre de usuario a: {user.username}")
+            return jsonify(
+                mensaje=f"Modificaste nombre de usuario a: {user.username}"
+            )
         else:
             # Modify everything
             user.username = username
@@ -138,7 +139,13 @@ class CategoriesAPI(MethodView):
             post_schemas = []
             for post in posts:
                 post_schema = PostSchema(
-                    exclude=("id", "content", "author_id", "category_id", "date")
+                    exclude=(
+                        "id",
+                        "content",
+                        "author_id",
+                        "category_id",
+                        "date",
+                    )
                 ).dump(post)
                 post_schemas.append(post_schema)
 
@@ -180,7 +187,8 @@ class CategoriesAPI(MethodView):
 
 app.add_url_rule("/category", view_func=CategoriesAPI.as_view("category"))
 app.add_url_rule(
-    "/category/<category_id>", view_func=CategoriesAPI.as_view("category_for_id")
+    "/category/<category_id>",
+    view_func=CategoriesAPI.as_view("category_for_id"),
 )
 
 
@@ -191,32 +199,34 @@ class PostsAPI(MethodView):
             result = PostSchema(exclude=("id",)).dump(posts, many=True)
         return jsonify(result)
 
+
 app.add_url_rule("/post", view_func=PostsAPI.as_view("post"))
 app.add_url_rule("/post/<post_id>", view_func=PostsAPI.as_view("post_for_id"))
 
 
-
 class registerView(MethodView):
     def get(self):
-        return render_template('register.html')
-    
+        return render_template("register.html")
+
     def post(self):
-        username = request.form['username']
-        password = request.form['password']
-        password_hash = generate_password_hash(password, method='pbkdf2', salt_length=16 )
+        username = request.form["username"]
+        password = request.form["password"]
+        password_hash = generate_password_hash(
+            password, method="pbkdf2", salt_length=16
+        )
         nuevo_usuario = User(username=username, password_hash=password_hash)
         db.session.add(nuevo_usuario)
         db.session.commit()
 
-        return render_template('register.html')
+        return render_template("register.html")
 
 
-app.add_url_rule('/register', view_func=registerView.as_view('register'))
+app.add_url_rule("/register", view_func=registerView.as_view("register"))
 
 
-@app.route('/login')
+@app.route("/login")
 def login():
-    data = request.authorization
+    data = request.json
     username = data.get("username")
     password = data.get("password")
 
