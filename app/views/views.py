@@ -25,6 +25,7 @@ from app.schemas.schemas import (
     ShowUsersBasicSchema,
     CategorySchema,
     PostSchema,
+    CommentSchema
 )
 
 
@@ -243,6 +244,30 @@ class PostsAPI(MethodView):
 
 app.add_url_rule("/post", view_func=PostsAPI.as_view("post"))
 app.add_url_rule("/post/<post_id>", view_func=PostsAPI.as_view("post_for_id"))
+
+
+class CommentAPI(MethodView):
+    def post(self):
+        comment_json = CommentSchema().load(request.json)
+        content = comment_json.get("content")
+        date = comment_json.get("date")
+        author_id = comment_json.get("author_id")
+        post_id = comment_json.get("post_id")
+        new_comment = Comment(content=content, date=date, author_id=author_id, post_id=post_id)
+        db.session.add(new_comment)
+        db.session.commit()
+        return(jsonify(f"Nuevo comentario agregado: {CommentSchema(exclude=('id',)).dump(new_comment)}"))
+    
+    def delete(self, comment_id):
+        comment = Comment.query.get(comment_id)
+        db.session.delete(comment)
+        db.session.commit()
+        return jsonify(f"Eliminsta el Comentario: {comment}")
+
+
+app.add_url_rule("/comment", view_func=CommentAPI.as_view("comment"))
+app.add_url_rule("/comment/<comment_id>", view_func=CommentAPI.as_view("comment_for_id"))
+
 
 
 class registerView(MethodView):
