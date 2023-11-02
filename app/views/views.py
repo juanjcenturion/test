@@ -202,6 +202,43 @@ class PostsAPI(MethodView):
             result = PostSchema(exclude=('id',)).dump(post)
 
         return jsonify(result)
+    def post(self):
+        post_json = PostSchema().load(request.json)
+        title = post_json.get("title")
+        content = post_json.get("content")
+        date = post_json.get("date")
+        author_id = post_json.get("author_id")
+        category_id = post_json.get("category_id")
+
+        nuevo_post = Post(title=title, content=content, date=date, author_id=author_id, category_id=category_id)
+        db.session.add(nuevo_post)
+        db.session.commit()
+        return jsonify(f"Nuevo Post agregado: {PostSchema(exlcude=('id')).dump(nuevo_post)}")
+    
+    def put (self, post_id):
+        post = Post.query.get(post_id)
+        post_json = PostSchema().load(request.json)
+        title = post_json.get("title")
+        content = post_json.get("content")
+        date = post_json.get("date")
+        author_id = post_json.get("author_id")
+        category_id = post_json.get("category_id")
+        post.title = title
+        post.content = content
+        post.date = date
+        post.author_id = author_id
+        post.category = category_id
+
+        db.session.commit()
+        return jsonify(
+            f"Post Editado: {PostSchema(exclude=('id',)).dump(post)}"
+        )
+    
+    def delete(self, post_id):
+        post = Post.query.get(post_id)
+        db.session.delete(post)
+        db.session.commit()
+        return jsonify(f"Eliminaste el Post: {post}")
 
 
 app.add_url_rule("/post", view_func=PostsAPI.as_view("post"))
