@@ -18,7 +18,7 @@ class CategorySchema(ma.Schema):
 
 
 class CommentSchema(ma.Schema):
-    id = fields.Integer(dump_only = True)
+    id = fields.Integer(dump_only=True)
     content = fields.String()
     date = fields.DateTime()
     author_id = fields.Integer()
@@ -32,4 +32,4 @@ class PostSchema(ma.Schema):
     date = fields.DateTime()
     author_id = fields.Integer()
     category_id = fields.Integer()
-    comment_obj = fields.Nested(CommentSchema, exclude=('id',), many=True)
+    comment_obj = fields.Nested(CommentSchema, exclude=("id",), many=True)
