@@ -197,6 +197,10 @@ class PostsAPI(MethodView):
         if post_id is None:
             posts = Post.query.all()
             result = PostSchema(exclude=("id",)).dump(posts, many=True)
+        else:
+            post = Post.query.get(post_id)
+            result = PostSchema(exclude=('id',)).dump(post)
+
         return jsonify(result)
 
 
