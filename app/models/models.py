@@ -54,7 +54,7 @@ class Post(db.Model):
     comment_obj = db.relationship("Comment")
 
     def __str__(self):
-        return self.name
+        return self.title
 
 
 # Create table "Comment"
@@ -72,4 +72,4 @@ class Comment(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey("post.id"), nullable=False)
 
     def __str__(self):
-        return self.name
+        return self.content

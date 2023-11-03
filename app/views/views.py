@@ -28,7 +28,7 @@ from app.schemas.schemas import (
     CommentSchema
 )
 
-
+#ADD STATUS CODE HTTP
 class UsersAPI(MethodView):
     @jwt_required()
     def get(self, user_id=None):
@@ -53,7 +53,7 @@ class UsersAPI(MethodView):
             else:
                 user = User.query.get(user_id)
                 results = ShowUsersBasicSchema().dump(user)
-            return jsonify(results)
+            return jsonify(results),200
 
     def post(self):
         # Create User based in UserSchema
@@ -83,7 +83,7 @@ class UsersAPI(MethodView):
         user = User.query.get(user_id)
         user_json = UserSchema().load(request.json)
         username = user_json.get("username")
-        password_hash = user_json.get("password")
+        password_hash = user_json.get("password_hash")
         is_admin = user_json.get("is_admin")
         if username is None:
             # If only change the password
@@ -95,7 +95,7 @@ class UsersAPI(MethodView):
             db.session.commit()
             return jsonify(
                 mensaje=f"Modificaste la contraseña de: {user.username}"
-            )
+            ), 201
         elif password_hash is None:
             # If only change the Username
             user.is_admin = is_admin
@@ -103,7 +103,7 @@ class UsersAPI(MethodView):
             db.session.commit()
             return jsonify(
                 mensaje=f"Modificaste nombre de usuario a: {user.username}"
-            )
+            ), 201
         else:
             # Modify everything
             user.username = username
@@ -115,7 +115,7 @@ class UsersAPI(MethodView):
             db.session.commit()
             return jsonify(
                 mensaje=f"Modificaste nombre de usuario y contraseña de: {user.username}"
-            )
+            ), 201
 
     def delete(self, user_id):
         user = User.query.get(user_id)
@@ -127,7 +127,7 @@ class UsersAPI(MethodView):
 app.add_url_rule("/user", view_func=UsersAPI.as_view("user"))
 app.add_url_rule("/user/<user_id>", view_func=UsersAPI.as_view("user_for_id"))
 
-
+#ADD STATUS CODE HTTP
 class CategoriesAPI(MethodView):
     def get(self, category_id=None):
         if category_id is None:
@@ -164,7 +164,7 @@ class CategoriesAPI(MethodView):
         db.session.commit()
         return (
             jsonify(
-                f"Nueva Categoria agregada: {CategorySchema(exclude=('id',)).dump(new_category)}"
+                f"Nueva Categoria agregada: {new_category}"
             ),
             201,
         )
@@ -176,7 +176,7 @@ class CategoriesAPI(MethodView):
         category.name = name
         db.session.commit()
         return jsonify(
-            f"Nombre de categoria cambiado: {CategorySchema(exclude=('id',)).dump(category)}"
+            f"Nombre de categoria cambiado a: {name}"
         )
 
     def delete(self, category_id):
@@ -210,36 +210,33 @@ class PostsAPI(MethodView):
         date = post_json.get("date")
         author_id = post_json.get("author_id")
         category_id = post_json.get("category_id")
-
         nuevo_post = Post(title=title, content=content, date=date, author_id=author_id, category_id=category_id)
         db.session.add(nuevo_post)
         db.session.commit()
-        return jsonify(f"Nuevo Post agregado: {PostSchema(exlcude=('id')).dump(nuevo_post)}")
+        return jsonify(f"Nuevo Post agregado: {title}")
     
-    def put (self, post_id):
+    def put(self, post_id):
         post = Post.query.get(post_id)
         post_json = PostSchema().load(request.json)
         title = post_json.get("title")
         content = post_json.get("content")
-        date = post_json.get("date")
-        author_id = post_json.get("author_id")
         category_id = post_json.get("category_id")
-        post.title = title
-        post.content = content
-        post.date = date
-        post.author_id = author_id
-        post.category = category_id
+        if title is not None:
+            post.title = title
+        if content is not None:
+            post.content = content
+        if category_id is not None:
+            post.category_id = category_id
 
         db.session.commit()
-        return jsonify(
-            f"Post Editado: {PostSchema(exclude=('id',)).dump(post)}"
-        )
+        return jsonify(f"Publicación editada: {post.title}")
+
     
     def delete(self, post_id):
         post = Post.query.get(post_id)
         db.session.delete(post)
         db.session.commit()
-        return jsonify(f"Eliminaste el Post: {post}")
+        return jsonify(mensaje = f"Eliminaste el Post: {post}")
 
 
 app.add_url_rule("/post", view_func=PostsAPI.as_view("post"))
@@ -262,7 +259,7 @@ class CommentAPI(MethodView):
         comment = Comment.query.get(comment_id)
         db.session.delete(comment)
         db.session.commit()
-        return jsonify(f"Eliminsta el Comentario: {comment}")
+        return jsonify(f"Eliminaste el Comentario: {comment}")
 
 
 app.add_url_rule("/comment", view_func=CommentAPI.as_view("comment"))
