@@ -25,10 +25,11 @@ from app.schemas.schemas import (
     ShowUsersBasicSchema,
     CategorySchema,
     PostSchema,
-    CommentSchema
+    CommentSchema,
 )
 
-#ADD STATUS CODE HTTP
+
+# ADD STATUS CODE HTTP
 class UsersAPI(MethodView):
     @jwt_required()
     def get(self, user_id=None):
@@ -53,7 +54,7 @@ class UsersAPI(MethodView):
             else:
                 user = User.query.get(user_id)
                 results = ShowUsersBasicSchema().dump(user)
-            return jsonify(results),200
+            return jsonify(results), 200
 
     def post(self):
         # Create User based in UserSchema
@@ -93,17 +94,23 @@ class UsersAPI(MethodView):
             user.is_admin = is_admin
             user.password_hash = password_hash
             db.session.commit()
-            return jsonify(
-                mensaje=f"Modificaste la contraseña de: {user.username}"
-            ), 201
+            return (
+                jsonify(
+                    mensaje=f"Modificaste la contraseña de: {user.username}"
+                ),
+                201,
+            )
         elif password_hash is None:
             # If only change the Username
             user.is_admin = is_admin
             user.username = username
             db.session.commit()
-            return jsonify(
-                mensaje=f"Modificaste nombre de usuario a: {user.username}"
-            ), 201
+            return (
+                jsonify(
+                    mensaje=f"Modificaste nombre de usuario a: {user.username}"
+                ),
+                201,
+            )
         else:
             # Modify everything
             user.username = username
@@ -113,9 +120,12 @@ class UsersAPI(MethodView):
             user.password_hash = password_hash
             user.is_admin = is_admin
             db.session.commit()
-            return jsonify(
-                mensaje=f"Modificaste nombre de usuario y contraseña de: {user.username}"
-            ), 201
+            return (
+                jsonify(
+                    mensaje=f"Modificaste nombre de usuario y contraseña de: {user.username}"
+                ),
+                201,
+            )
 
     def delete(self, user_id):
         user = User.query.get(user_id)
@@ -127,7 +137,8 @@ class UsersAPI(MethodView):
 app.add_url_rule("/user", view_func=UsersAPI.as_view("user"))
 app.add_url_rule("/user/<user_id>", view_func=UsersAPI.as_view("user_for_id"))
 
-#ADD STATUS CODE HTTP
+
+# ADD STATUS CODE HTTP
 class CategoriesAPI(MethodView):
     def get(self, category_id=None):
         if category_id is None:
@@ -154,7 +165,7 @@ class CategoriesAPI(MethodView):
                 "category": CategorySchema(exclude=("id",)).dump(category),
                 "posts": post_schemas,
             }
-        return jsonify(result)
+        return (jsonify(result), 200)
 
     def post(self):
         category_json = CategorySchema().load(request.json)
@@ -163,9 +174,7 @@ class CategoriesAPI(MethodView):
         db.session.add(new_category)
         db.session.commit()
         return (
-            jsonify(
-                f"Nueva Categoria agregada: {new_category}"
-            ),
+            jsonify(f"Nueva Categoria agregada: {new_category}"),
             201,
         )
 
@@ -175,15 +184,13 @@ class CategoriesAPI(MethodView):
         name = category_json.get("name")
         category.name = name
         db.session.commit()
-        return jsonify(
-            f"Nombre de categoria cambiado a: {name}"
-        )
+        return (jsonify(f"Nombre de categoria cambiado a: {name}"), 201)
 
     def delete(self, category_id):
         category = Category.query.get(category_id)
         db.session.delete(category)
         db.session.commit()
-        return jsonify(mensaje=f"Borraste la categoria: {category}")
+        return (jsonify(mensaje=f"Borraste la categoria: {category}"), 200)
 
 
 app.add_url_rule("/category", view_func=CategoriesAPI.as_view("category"))
@@ -200,9 +207,9 @@ class PostsAPI(MethodView):
             result = PostSchema(exclude=("id",)).dump(posts, many=True)
         else:
             post = Post.query.get(post_id)
-            result = PostSchema(exclude=('id',)).dump(post)
+            result = PostSchema(exclude=("id",)).dump(post)
+        return (jsonify(result), 200)
 
-        return jsonify(result)
     def post(self):
         post_json = PostSchema().load(request.json)
         title = post_json.get("title")
@@ -210,11 +217,17 @@ class PostsAPI(MethodView):
         date = post_json.get("date")
         author_id = post_json.get("author_id")
         category_id = post_json.get("category_id")
-        nuevo_post = Post(title=title, content=content, date=date, author_id=author_id, category_id=category_id)
+        nuevo_post = Post(
+            title=title,
+            content=content,
+            date=date,
+            author_id=author_id,
+            category_id=category_id,
+        )
         db.session.add(nuevo_post)
         db.session.commit()
-        return jsonify(f"Nuevo Post agregado: {title}")
-    
+        return (jsonify(f"Nuevo Post agregado: {title}"), 201)
+
     def put(self, post_id):
         post = Post.query.get(post_id)
         post_json = PostSchema().load(request.json)
@@ -229,14 +242,13 @@ class PostsAPI(MethodView):
             post.category_id = category_id
 
         db.session.commit()
-        return jsonify(f"Publicación editada: {post.title}")
+        return (jsonify(f"Publicación editada: {post.title}"), 201)
 
-    
     def delete(self, post_id):
         post = Post.query.get(post_id)
         db.session.delete(post)
         db.session.commit()
-        return jsonify(mensaje = f"Eliminaste el Post: {post}")
+        return (jsonify(mensaje=f"Eliminaste el Post: {post}"), 200)
 
 
 app.add_url_rule("/post", view_func=PostsAPI.as_view("post"))
@@ -250,21 +262,24 @@ class CommentAPI(MethodView):
         date = comment_json.get("date")
         author_id = comment_json.get("author_id")
         post_id = comment_json.get("post_id")
-        new_comment = Comment(content=content, date=date, author_id=author_id, post_id=post_id)
+        new_comment = Comment(
+            content=content, date=date, author_id=author_id, post_id=post_id
+        )
         db.session.add(new_comment)
         db.session.commit()
-        return(jsonify(f"Nuevo comentario agregado: {CommentSchema(exclude=('id',)).dump(new_comment)}"))
-    
+        return (jsonify(f"Nuevo comentario agregado: {content}"), 201)
+
     def delete(self, comment_id):
         comment = Comment.query.get(comment_id)
         db.session.delete(comment)
         db.session.commit()
-        return jsonify(f"Eliminaste el Comentario: {comment}")
+        return (jsonify(f"Eliminaste el Comentario: {comment}"), 200)
 
 
 app.add_url_rule("/comment", view_func=CommentAPI.as_view("comment"))
-app.add_url_rule("/comment/<comment_id>", view_func=CommentAPI.as_view("comment_for_id"))
-
+app.add_url_rule(
+    "/comment/<comment_id>", view_func=CommentAPI.as_view("comment_for_id")
+)
 
 
 class registerView(MethodView):
