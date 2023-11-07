@@ -13,4 +13,4 @@ __pycache__/
 # Carpeta de migraciones generada por Flask-Migrate
 /migrations
 
-*.env
+.env
