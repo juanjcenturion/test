@@ -1,48 +1,3 @@
-# PIT STOP BLOG
-### Centurion - Filiberti
-### Descripcion:
-Creacion de un miniblog desarrollado en Flask, utilizando las herramientas aprendidas en todo el año.
-
-### Requisitos:
-Para poder ejecutar nuestro proyecto, debe realizar los siguientes pasos:
-
-1. Crear y activar un entorno Vitual.
-
-`
-python3 -m venv env
-`
-
-2. Clonar el repositorio.
-
-`
-git clone git@github.com:juanjcenturion/flask_practice1.git
-`
-
-3. Instalar requeriments.txt
-
-` 
-pip install -r requeriments.txt
-`
-
-4. Crear .env, utilizando .env.example como ejemplo
-
-
-5. Migrar los modelos a una base de datos
-
-` 
-flask db init
-flask db migrate -m "Mensaje de migracion"
-flask db update
-`
-
-6. Correr la aplicacion de flask.
-
-`
-flask run --reload
-`
-
-### Thunder Client Consultas:
-```
 {
     "client": "Thunder Client",
     "collectionName": "miniblog_flask",
@@ -366,4 +321,3 @@ flask run --reload
         }
     ]
 }
-```
